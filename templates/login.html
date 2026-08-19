@@ -1,0 +1,89 @@
+{% extends 'layout.html' %} {% block title %}Login · SmartPark{% endblock %} {%
+block content %}
+<div class="form-center card-modern">
+  <div class="card-header text-center">🚗 SmartPark Login</div>
+  <div class="card-body">
+    {% with messages = get_flashed_messages(with_categories=true) %} {% if
+    messages %} {% for category, message in messages %}
+    <div class="alert alert-{{ category }}">{{ message }}</div>
+    {% endfor %} {% endif %} {% endwith %}
+    <form method="POST">
+      <div class="mb-3">
+        <label class="form-label">Username</label>
+        <input type="text" name="username" class="form-control" required />
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Password</label>
+        <input type="password" name="password" class="form-control" required />
+      </div>
+      <button type="submit" class="btn btn-primary w-100">Login</button>
+    </form>
+    <p class="text-center mt-3">
+      <a href="{{ url_for('auth.register') }}">Create Account</a>
+    </p>
+  </div>
+</div>
+{% endblock %} EOF # Create register template cat > templates/register.html <<
+'EOF'
+<!doctype html>
+<html>
+  <head>
+    <title>Register</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="container mt-5" style="max-width: 400px">
+      <div class="card shadow">
+        <div class="card-body">
+          <h2 class="text-center mb-4">🚗 Create Account</h2>
+          {% with messages = get_flashed_messages(with_categories=true) %} {% if
+          messages %} {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">{{ message }}</div>
+          {% endfor %} {% endif %} {% endwith %}
+          <form method="POST">
+            <div class="mb-3">
+              <label>Username</label>
+              <input
+                type="text"
+                name="username"
+                class="form-control"
+                required
+              />
+            </div>
+            <div class="mb-3">
+              <label>Email</label>
+              <input type="email" name="email" class="form-control" required />
+            </div>
+            <div class="mb-3">
+              <label>Password</label>
+              <input
+                type="password"
+                name="password"
+                class="form-control"
+                required
+              />
+            </div>
+            <div class="mb-3">
+              <label>Confirm Password</label>
+              <input
+                type="password"
+                name="confirm_password"
+                class="form-control"
+                required
+              />
+            </div>
+            <button type="submit" class="btn btn-primary w-100">
+              Register
+            </button>
+          </form>
+          <p class="text-center mt-3">
+            <a href="{{ url_for('auth.login') }}">Already have an account?</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

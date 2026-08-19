@@ -1,0 +1,192 @@
+{% extends 'layout.html' %} {% block title %}Dashboard · SmartPark{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="row g-4 mb-4">
+    <div class="col-md-4">
+      <div class="stat-card">
+        <div class="stat-label">Total Parking Slots</div>
+        <div class="stat-number" id="total-slots">0</div>
+        <div class="text-muted-2">Overview of all monitored slots</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="stat-card">
+        <div class="stat-label">Available Now</div>
+        <div class="stat-number" id="available-slots">0</div>
+        <div class="text-muted-2">Slots ready for parking</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="stat-card">
+        <div class="stat-label">Occupied</div>
+        <div class="stat-number" id="occupied-slots">0</div>
+        <div class="text-muted-2">Currently occupied slots</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <div class="card-modern">
+        <div class="card-header">
+          <i class="fas fa-video"></i> Live Camera Feed
+          <span class="badge bg-success ms-2">HD</span>
+        </div>
+        <div class="card-body">
+          <div class="camera-overlay">
+            <div class="live-badge"><span class="pulse"></span> LIVE</div>
+            <img
+              id="camera-feed"
+              src=""
+              alt="Camera Feed"
+              style="
+                width: 100%;
+                border-radius: 10px;
+                min-height: 260px;
+                background: #111;
+              "
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="card-modern">
+        <div class="card-header">
+          <i class="fas fa-th-large"></i> Parking Slots
+          <span class="badge bg-secondary ms-2" id="slot-count">0/0</span>
+        </div>
+        <div class="card-body">
+          <div
+            id="slot-grid"
+            class="d-grid"
+            style="grid-template-columns: repeat(2, 1fr); gap: 10px"
+          ></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mt-4">
+    <div class="col-12">
+      <div class="card-modern">
+        <div class="card-header">
+          <i class="fas fa-chart-line"></i> Occupancy Trends
+        </div>
+        <div class="card-body">
+          <div class="chart-container">
+            <canvas id="history-chart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  let chart = null;
+  document.addEventListener("DOMContentLoaded", function () {
+    updateStatus();
+    updateFeed();
+    loadHistory();
+    setInterval(updateStatus, 10000);
+  });
+
+  function updateStatus() {
+    fetch("/api/status")
+      .then((r) => r.json())
+      .then((data) => {
+        document.getElementById("total-slots").textContent = data.total_slots;
+        document.getElementById("available-slots").textContent =
+          data.available_slots;
+        document.getElementById("occupied-slots").textContent =
+          data.occupied_slots;
+        document.getElementById("slot-count").textContent =
+          `${data.occupied_slots}/${data.total_slots}`;
+        const grid = document.getElementById("slot-grid");
+        grid.innerHTML = "";
+        data.slots.forEach((slot) => {
+          const div = document.createElement("div");
+          div.className = `slot-item-modern ${slot.occupied ? "occupied" : "available"}`;
+          div.innerHTML = `<div>${slot.number}</div><small>${slot.occupied ? "⛔ OCCUPIED" : "✅ AVAILABLE"}</small>`;
+          grid.appendChild(div);
+        });
+      })
+      .catch(() => {});
+  }
+
+  function updateFeed() {
+    const img = document.getElementById("camera-feed");
+    img.style.opacity = 0.6;
+    fetch("/api/detect")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.image) {
+          img.src = `data:image/jpeg;base64,${data.image}`;
+          img.style.opacity = 1;
+        }
+        // Use detect response as single source-of-truth for slot status
+        if (typeof data.total_slots !== "undefined") {
+          document.getElementById("total-slots").textContent = data.total_slots;
+          document.getElementById("available-slots").textContent =
+            data.available_slots;
+          document.getElementById("occupied-slots").textContent =
+            data.occupied_slots;
+          document.getElementById("slot-count").textContent =
+            `${data.occupied_slots}/${data.total_slots}`;
+          const grid = document.getElementById("slot-grid");
+          grid.innerHTML = "";
+          (data.slots || []).forEach((slot) => {
+            const div = document.createElement("div");
+            div.className = `slot-item-modern ${slot.occupied ? "occupied" : "available"}`;
+            div.innerHTML = `<div>${slot.number}</div><small>${slot.occupied ? "⛔ OCCUPIED" : "✅ AVAILABLE"}</small>`;
+            grid.appendChild(div);
+          });
+        }
+      })
+      .catch(() => {
+        img.style.opacity = 1;
+      });
+  }
+
+  function loadHistory() {
+    fetch("/api/history")
+      .then((r) => r.json())
+      .then((data) => {
+        if (!data.length) return;
+        const labels = data
+          .map((d) => new Date(d.date).toLocaleTimeString())
+          .reverse();
+        const avail = data.map((d) => d.available_slots).reverse();
+        const occ = data.map((d) => d.occupied_slots).reverse();
+        if (chart) chart.destroy();
+        const ctx = document.getElementById("history-chart").getContext("2d");
+        chart = new Chart(ctx, {
+          type: "line",
+          data: {
+            labels,
+            datasets: [
+              {
+                label: "Available",
+                data: avail,
+                borderColor: "#22c55e",
+                backgroundColor: "rgba(34,197,94,0.08)",
+                fill: true,
+              },
+              {
+                label: "Occupied",
+                data: occ,
+                borderColor: "#ef4444",
+                backgroundColor: "rgba(239,68,68,0.08)",
+                fill: true,
+              },
+            ],
+          },
+          options: { responsive: true, maintainAspectRatio: false },
+        });
+      })
+      .catch(() => {});
+  }
+</script>
+{% endblock %}

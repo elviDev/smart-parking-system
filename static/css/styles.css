@@ -1,0 +1,84 @@
+:root {
+  --bg: #f0f2f5;
+  --card: #ffffff;
+  --muted: #6b7280;
+  --radius: 14px;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  font-family:
+    Inter,
+    system-ui,
+    Segoe UI,
+    Roboto,
+    Arial,
+    Helvetica,
+    sans-serif;
+  background: var(--bg);
+  margin: 0;
+  min-height: 100vh;
+}
+.navbar-brand {
+  font-weight: 800;
+}
+.app-container {
+  padding: 1.25rem;
+}
+.card-modern {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: none;
+  border: 1px solid rgba(15, 23, 42, 0.04);
+  border: 0;
+  padding: 0;
+}
+.card-modern .card-header {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+  font-weight: 600;
+}
+.card-modern .card-body {
+  padding: 1rem 1.25rem;
+}
+.form-center {
+  max-width: 420px;
+  margin: 2.5rem auto;
+}
+.brand-badge {
+  font-size: 0.9rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+}
+.footer-muted {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.gap-8 {
+  gap: 8px;
+}
+.text-muted-2 {
+  color: #9ca3af;
+}
+
+.stat-card {
+  background: var(--card);
+  border-radius: 14px;
+  padding: 1.25rem;
+  box-shadow: none;
+  border: 1px solid rgba(15, 23, 42, 0.04);
+}
+.slot-item-modern {
+  padding: 0.8rem;
+  border-radius: 10px;
+  color: white;
+  font-weight: 700;
+  text-align: center;
+}
+.slot-item-modern.available {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+.slot-item-modern.occupied {
+  background: linear-gradient(135deg, #ff5f6d 0%, #ffc371 100%);
+}

@@ -1,0 +1,151 @@
+{% extends 'layout.html' %} {% block title %}Register · SmartPark{% endblock %}
+{% block content %}
+<div class="form-center card-modern">
+  <div class="card-header text-center">🚗 Create Account</div>
+  <div class="card-body">
+    {% with messages = get_flashed_messages(with_categories=true) %} {% if
+    messages %} {% for category, message in messages %}
+    <div class="alert alert-{{ category }}">{{ message }}</div>
+    {% endfor %} {% endif %} {% endwith %}
+
+    <form id="registerForm" method="POST" novalidate>
+      <div class="mb-3">
+        <label class="form-label">Username</label>
+        <input
+          id="username"
+          type="text"
+          name="username"
+          class="form-control"
+          required
+        />
+        <div class="invalid-feedback">Please enter a username.</div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Email</label>
+        <input
+          id="email"
+          type="email"
+          name="email"
+          class="form-control"
+          required
+        />
+        <div class="invalid-feedback">Please enter a valid email address.</div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Password</label>
+        <div class="input-group">
+          <input
+            id="password"
+            type="password"
+            name="password"
+            class="form-control"
+            required
+          />
+          <button
+            type="button"
+            id="togglePwd"
+            class="btn btn-outline-secondary"
+          >
+            Show
+          </button>
+        </div>
+        <div class="form-text">Use at least 6 characters.</div>
+        <div
+          id="pwdStrength"
+          class="mt-2 text-muted-2"
+          style="font-size: 0.9rem"
+        ></div>
+        <div class="invalid-feedback">Please enter a stronger password.</div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Confirm Password</label>
+        <input
+          id="confirm_password"
+          type="password"
+          name="confirm_password"
+          class="form-control"
+          required
+        />
+        <div id="confirmFeedback" class="invalid-feedback">
+          Passwords do not match.
+        </div>
+      </div>
+      <button id="submitBtn" type="submit" class="btn btn-primary w-100">
+        Register
+      </button>
+    </form>
+
+    <p class="text-center mt-3">
+      <a href="{{ url_for('auth.login') }}">Already have an account?</a>
+    </p>
+  </div>
+</div>
+{% endblock %} {% block scripts %}
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const form = document.getElementById("registerForm");
+    const pwd = document.getElementById("password");
+    const confirm = document.getElementById("confirm_password");
+    const toggle = document.getElementById("togglePwd");
+    const pwdStrength = document.getElementById("pwdStrength");
+
+    function strengthText(value) {
+      if (!value) return "";
+      if (value.length < 6) return "Too short";
+      const hasNum = /\d/.test(value);
+      const hasUpper = /[A-Z]/.test(value);
+      const hasSymbol = /[^A-Za-z0-9]/.test(value);
+      if (hasNum && hasUpper && hasSymbol) return "Strong";
+      if ((hasNum && hasUpper) || (hasNum && hasSymbol)) return "Medium";
+      return "Weak";
+    }
+
+    pwd.addEventListener("input", () => {
+      pwdStrength.textContent = "Strength: " + strengthText(pwd.value);
+      if (pwd.value.length >= 6) pwd.classList.remove("is-invalid");
+    });
+
+    toggle.addEventListener("click", () => {
+      if (pwd.type === "password") {
+        pwd.type = "text";
+        toggle.textContent = "Hide";
+      } else {
+        pwd.type = "password";
+        toggle.textContent = "Show";
+      }
+    });
+
+    function validatePasswords() {
+      if (confirm.value !== pwd.value) {
+        confirm.classList.add("is-invalid");
+        return false;
+      }
+      confirm.classList.remove("is-invalid");
+      return true;
+    }
+
+    confirm.addEventListener("input", validatePasswords);
+
+    form.addEventListener("submit", (e) => {
+      let valid = true;
+      if (!document.getElementById("username").value) {
+        document.getElementById("username").classList.add("is-invalid");
+        valid = false;
+      }
+      if (!document.getElementById("email").value) {
+        document.getElementById("email").classList.add("is-invalid");
+        valid = false;
+      }
+      if (pwd.value.length < 6) {
+        pwd.classList.add("is-invalid");
+        valid = false;
+      }
+      if (!validatePasswords()) valid = false;
+      if (!valid) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    });
+  });
+</script>
+{% endblock %}
